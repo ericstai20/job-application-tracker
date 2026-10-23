@@ -18,8 +18,37 @@ Set up the project: virtual environment, dependencies, starter files, and Git.
 - `git add .` - stage files (put them in the box).
 - `git commit -m "message"` - save a snapshot (seal the box with a label).
 - `git config --global user.name / user.email` - one-time setup so commits have an author.
+- Git = save points on my computer. GitHub = website that stores a copy online.
+- `git remote add origin <url>` - connect my repo to GitHub. `git push` - upload my commits.
 
 **Mistakes I fixed**
 - Two commands on one line -> run each command separately.
 - Typed `gigit` -> PowerShell's "not recognized" error usually means a typo.
 - `LF will be replaced by CRLF` warnings are harmless (Windows line endings).
+
+## Day 2
+
+Built the database and connected it to the app. The app can now add and show applications.
+
+**Database basics** - A table is like a spreadsheet: columns are fields (company, role...), rows are entries (one application). SQLite stores the whole database in one file, `applications.db`.
+
+**My table** - `id` (filled in automatically), `company`, `role`, `status`, `date_applied` (required), `location`, `job_link`, `notes` (optional). Dates are stored as `YYYY-MM-DD` text so they sort correctly.
+
+**Safety rules in the table**
+- `NOT NULL` - the field is required.
+- `CHECK` - status must be Applied, Interviewing, Offer, or Rejected. Tested it with "Aplied" and the database refused it.
+
+**SQL I used**
+- `CREATE TABLE` - make the table.
+- `INSERT INTO` - add a row.
+- `SELECT * FROM ... ORDER BY ... DESC` - get rows, newest first.
+
+**`?` placeholders (parameterized queries)** - Values are passed separately from the SQL, so they're treated as data, never code. Prevents SQL injection and stops names like `McDonald's` from breaking the query.
+
+**Separation of concerns** - `database.py` handles data, `app.py` handles the page. `app.py` never writes SQL itself.
+
+**How Streamlit works** - Every click re-runs `app.py` from top to bottom, so order matters. A form waits until the submit button is clicked.
+
+**Validation** - Check input before saving: company and role can't be empty, and status comes from a dropdown so it can't be misspelled.
+
+**CRUD** - Create, Read, Update, Delete. Done: Create and Read. Next: Update and Delete.
