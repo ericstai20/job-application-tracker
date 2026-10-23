@@ -1,0 +1,14 @@
+# Virtual environment (each developer creates their own)
+.venv/
+
+# Secrets such as API keys - never commit these
+.env
+
+# Python's compiled bytecode cache
+__pycache__/
+
+# SQLite database files (local data, not source code)
+*.db
+
+# Editor settings (personal to my setup)
+.vscode/
