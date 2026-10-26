@@ -52,3 +52,29 @@ Built the database and connected it to the app. The app can now add and show app
 **Validation** - Check input before saving: company and role can't be empty, and status comes from a dropdown so it can't be misspelled.
 
 **CRUD** - Create, Read, Update, Delete. Done: Create and Read. Next: Update and Delete.
+
+## Day 3
+
+Added Update and Delete. The app can now change an application's status and remove applications, so all four CRUD steps work.
+
+**SQL I used**
+- `UPDATE applications SET status = ? WHERE id = ?` - change one column in one row.
+- `DELETE FROM applications WHERE id = ?` - remove one row.
+
+**`WHERE` is the safety catch** - It picks which row to change, using the `id` column. Without `WHERE`, `UPDATE` changes every row and `DELETE` empties the whole table.
+
+**One-item tuple `(app_id,)`** - Placeholder values must be a tuple. `(app_id)` is just `app_id` in brackets; the trailing comma is what makes it a tuple.
+
+**`format_func`** - The dropdown holds whole application dictionaries, but `format_func` decides what's displayed ("Intern at Acme (2026-10-01)"). So the selected item still has its `id`.
+
+**Widget `key`s** - Name tags Streamlit uses to tell widgets apart. Putting the id in the key (`status_3`) gives each application its own status dropdown.
+
+**Order matters (again)** - The update section sits above the table. Since every click re-runs `app.py` top to bottom, the table is drawn after the change and shows the new data.
+
+**Delete safety** - The Delete button stays disabled until a confirmation checkbox is ticked, because there's no undo.
+
+**Manual testing** - Checked every path by hand: update, dropdown starting on the current status, the disabled delete button, and delete.
+
+**Git** - `;` runs commands one after another in PowerShell, even if one fails. `&&` (only continue if it worked) doesn't exist in Windows PowerShell 5.1. In git output, `[main 58fb168]` means the commit worked and `old..new main -> main` means the push worked.
+
+**CRUD** - Done: Create, Read, Update, Delete.
