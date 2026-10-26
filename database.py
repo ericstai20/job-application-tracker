@@ -65,3 +65,23 @@ def get_applications():
     ).fetchall()
     conn.close()
     return [dict(row) for row in rows]
+
+
+def update_status(app_id, new_status):
+    """Change the status of one application, found by its id."""
+    conn = get_connection()
+    # WHERE id = ? limits the change to one row. Without it, every row changes.
+    conn.execute(
+        "UPDATE applications SET status = ? WHERE id = ?",
+        (new_status, app_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_application(app_id):
+    """Permanently remove one application, found by its id."""
+    conn = get_connection()
+    conn.execute("DELETE FROM applications WHERE id = ?", (app_id,))
+    conn.commit()
+    conn.close()

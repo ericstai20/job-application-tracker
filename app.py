@@ -35,6 +35,40 @@ if submitted:
         )
         st.success(f"Added {role.strip()} at {company.strip()}.")
 
+
+def describe(application):
+    """Turn an application into a readable label for the dropdown."""
+    return (f"{application['role']} at {application['company']} "
+            f"({application['date_applied']})")
+
+
+# --- Update or delete an existing application ---
+# This section comes before the table so the table shows any change
+# made here in the same run.
+applications = database.get_applications()
+
+if applications:
+    st.subheader("Update an Application")
+    selected = st.selectbox("Application", applications, format_func=describe)
+
+    # Start the status dropdown on the application's current status.
+    # The key includes the id so each application gets its own dropdown.
+    new_status = st.selectbox(
+        "New status",
+        database.STATUSES,
+        index=database.STATUSES.index(selected["status"]),
+        key=f"status_{selected['id']}",
+    )
+    if st.button("Update status"):
+        database.update_status(selected["id"], new_status)
+        st.success(f"{describe(selected)} is now {new_status}.")
+
+    # Deleting can't be undone, so ask for confirmation first.
+    confirm_delete = st.checkbox("Yes, I want to delete this application")
+    if st.button("Delete application", disabled=not confirm_delete):
+        database.delete_application(selected["id"])
+        st.success(f"Deleted {describe(selected)}.")
+
 # --- Table of all applications ---
 st.subheader("My Applications")
 applications = database.get_applications()
