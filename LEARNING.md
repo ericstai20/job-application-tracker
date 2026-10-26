@@ -127,3 +127,25 @@ Added a summary row of number tiles: Total, plus one tile per status.
 - `zip(a, b)` - like a zipper, pairs up two lists item by item.
 
 **Order matters (third time!)** - The summary goes below the Add and Update sections, so the numbers are drawn after any change and are always current.
+
+## Day 6
+
+Split the page into three tabs: Overview (summary + table), Add, and Update / Delete. The data I look at most is now the first thing I see, without scrolling past the form.
+
+**Layout options I compared**
+- Expanders (`st.expander`) - fold a section up until clicked. Smallest change.
+- Tabs (`st.tabs`) - one page, several labeled sections. Picked this one.
+- Sidebar (`st.sidebar`) - a panel on the left. Too narrow for the form.
+- Multipage app - one `.py` file per page. Too much for an app this size.
+
+**Creating tabs** - `overview_tab, add_tab, manage_tab = st.tabs(["Overview", "Add", "Update / Delete"])`. The first label is the tab that's open when the app starts. Three names on the left is unpacking again (like Day 5), one tab per name.
+
+**`with` blocks** - `with add_tab:` means "put everything indented under here in this tab". That's why most of `app.py` moved one indent to the right; the code inside didn't change.
+
+**Tabs only hide things** - Streamlit still runs every tab's code, top to bottom, on every click. Tabs just decide what's visible.
+
+**Order matters (fourth time!)** - Overview is first on screen but last in the file. Add and Update / Delete run first, so the table and tiles are drawn after any change and are always current. File order and screen order don't have to match.
+
+**Empty tabs look broken** - The Update / Delete tab showed nothing when there were no applications. Added an `else` with `st.info("No applications yet. Add one in the Add tab.")`.
+
+**Testing without clicking** - Streamlit's `AppTest` runs the app without a browser and can check it for errors, list the tabs and read the tile values.
