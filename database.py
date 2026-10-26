@@ -55,14 +55,25 @@ def add_application(company, role, status, date_applied,
     conn.close()
 
 
-def get_applications():
-    """Return all applications as a list of dictionaries, newest first."""
+def get_applications(status=None):
+    """Return applications as a list of dictionaries, newest first.
+    If a status is given, only return applications with that status."""
     conn = get_connection()
     # Return rows that can be looked up by column name, not just position.
     conn.row_factory = sqlite3.Row
-    rows = conn.execute(
-        "SELECT * FROM applications ORDER BY date_applied DESC"
-    ).fetchall()
+    if status:
+        rows = conn.execute(
+            """
+            SELECT * FROM applications
+            WHERE status = ?
+            ORDER BY date_applied DESC
+            """,
+            (status,),
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT * FROM applications ORDER BY date_applied DESC"
+        ).fetchall()
     conn.close()
     return [dict(row) for row in rows]
 

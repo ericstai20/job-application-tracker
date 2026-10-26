@@ -71,9 +71,17 @@ if applications:
 
 # --- Table of all applications ---
 st.subheader("My Applications")
-applications = database.get_applications()
+show = st.selectbox("Show", ["All"] + database.STATUSES)
+
+# "All" means no filter, so pass None instead of a status.
+if show == "All":
+    applications = database.get_applications()
+else:
+    applications = database.get_applications(show)
 
 if applications:
     st.dataframe(applications, hide_index=True)
-else:
+elif show == "All":
     st.info("No applications yet.")
+else:
+    st.info(f"No applications with status {show}.")

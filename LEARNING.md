@@ -78,3 +78,27 @@ Added Update and Delete. The app can now change an application's status and remo
 **Git** - `;` runs commands one after another in PowerShell, even if one fails. `&&` (only continue if it worked) doesn't exist in Windows PowerShell 5.1. In git output, `[main 58fb168]` means the commit worked and `old..new main -> main` means the push worked.
 
 **CRUD** - Done: Create, Read, Update, Delete.
+
+## Day 4
+
+Added a "Show" dropdown that filters the applications table by status.
+
+**Filtering in SQL vs Python** - Could get every row and filter in Python, but asking the database for only the matching rows (`WHERE`) is how real apps handle lots of data.
+
+**SQL I used**
+- `SELECT * FROM applications WHERE status = ? ORDER BY date_applied DESC` - only the rows with that status, newest first.
+- Clause order matters: `SELECT -> FROM -> WHERE -> ORDER BY` (pick the table, filter, then sort).
+
+**`WHERE` again** - Same idea as Day 3, but for reading instead of changing rows.
+
+**Default parameters** - `def get_applications(status=None)` makes `status` optional. Calling it with no argument uses `None`, so old code like the Update section's `get_applications()` still works and still gets every application.
+
+**Truthiness** - `if status:` is false when `status` is `None` (or empty), true when it's something like `"Applied"`.
+
+**Every branch must set the variable** - Both the `if` and the `else` set `rows`, otherwise the `return` line fails. VS Code warned me with `"rows" is not defined`.
+
+**`if` / `elif` / `else`** - `elif` = "else if". Used it to show a different empty message: "No applications yet" vs "No applications with status Offer".
+
+**Joining lists** - `["All"] + database.STATUSES` makes one list. Reusing `STATUSES` means a new status shows up in the filter automatically.
+
+**Triple quotes `"""`** - Let a string span several lines, which keeps longer SQL readable.
