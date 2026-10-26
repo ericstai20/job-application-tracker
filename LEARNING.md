@@ -102,3 +102,28 @@ Added a "Show" dropdown that filters the applications table by status.
 **Joining lists** - `["All"] + database.STATUSES` makes one list. Reusing `STATUSES` means a new status shows up in the filter automatically.
 
 **Triple quotes `"""`** - Let a string span several lines, which keeps longer SQL readable.
+
+## Day 5
+
+Added a summary row of number tiles: Total, plus one tile per status.
+
+**Counting in SQL vs Python** - Could loop through every row in Python, but letting the database count is faster with lots of data.
+
+**SQL I used**
+- `SELECT status, COUNT(*) FROM applications GROUP BY status` - `GROUP BY` sorts rows into piles by status, `COUNT(*)` counts each pile. Returns one row per pile, like `("Applied", 2)`.
+
+**The missing-pile catch** - A status with 0 applications has no pile, so it doesn't come back at all. Fixed by starting every status at 0 in Python, then overwriting with the real counts.
+
+**Dictionaries** - `{}` is an empty dictionary: labels with values, like `"Applied" -> 2`. `counts[status] = 0` sets a value. `.values()` gives just the values, `.items()` gives label/value pairs.
+
+**Tuple unpacking** - `for status, count in rows:` splits each `("Applied", 2)` into two variables at once.
+
+**Streamlit layout** - `st.columns(5)` makes side-by-side columns. `st.metric(label, number)` draws a number tile.
+
+**Built-ins I used**
+- `sum(...)` - adds up numbers.
+- `len(...)` - how many items.
+- `columns[1:]` - a slice: everything except the first item.
+- `zip(a, b)` - like a zipper, pairs up two lists item by item.
+
+**Order matters (third time!)** - The summary goes below the Add and Update sections, so the numbers are drawn after any change and are always current.

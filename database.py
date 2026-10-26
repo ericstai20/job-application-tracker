@@ -78,6 +78,25 @@ def get_applications(status=None):
     return [dict(row) for row in rows]
 
 
+def count_by_status():
+    """Return how many applications have each status, e.g. {"Applied": 3, ...}.
+    Every status is included, even ones with 0 applications."""
+    conn = get_connection()
+    # GROUP BY sorts rows into piles by status; COUNT(*) counts each pile.
+    rows = conn.execute(
+        "SELECT status, COUNT(*) FROM applications GROUP BY status"
+    ).fetchall()
+    conn.close()
+
+    # Start every status at 0, since statuses with no rows don't come back.
+    counts = {}
+    for status in STATUSES:
+        counts[status] = 0
+    for status, count in rows:
+        counts[status] = count
+    return counts
+
+
 def update_status(app_id, new_status):
     """Change the status of one application, found by its id."""
     conn = get_connection()

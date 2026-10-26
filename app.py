@@ -71,7 +71,16 @@ if applications:
 
 # --- Table of all applications ---
 st.subheader("My Applications")
-show = st.selectbox("Show", ["All"] + database.STATUSES)
+
+# --- Summary: one number tile for the total and one per status ---
+counts = database.count_by_status()
+columns = st.columns(len(counts) + 1)
+columns[0].metric("Total", sum(counts.values()))
+# zip pairs each remaining column with one status and its count.
+for column, (status, count) in zip(columns[1:], counts.items()):
+    column.metric(status, count)
+
+show =st.selectbox("Show", ["All"] + database.STATUSES)
 
 # "All" means no filter, so pass None instead of a status.
 if show == "All":
