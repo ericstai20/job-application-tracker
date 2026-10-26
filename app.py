@@ -1,3 +1,5 @@
+from datetime import date
+
 import streamlit as st
 
 import database
@@ -9,7 +11,7 @@ st.title("Job Application Tracker")
 
 # Overview is listed first so it's the tab you see when the app opens.
 overview_tab, add_tab, manage_tab = st.tabs(
-    ["Overview", "Add", "Update / Delete"])
+    ["Overview", "Add", "Edit / Delete"])
 
 
 def describe(application):
@@ -19,7 +21,7 @@ def describe(application):
 
 
 # Tabs only hide things on screen: Streamlit still runs every block
-# below from top to bottom. So the Add and Update / Delete blocks come
+# below from top to bottom. So the Add and Edit / Delete blocks come
 # before the Overview block, so the table shows any change in the same run.
 
 # --- Form for adding a new application ---
@@ -51,26 +53,62 @@ with add_tab:
             )
             st.success(f"Added {role.strip()} at {company.strip()}.")
 
-# --- Update or delete an existing application ---
+# --- Edit or delete an existing application ---
 with manage_tab:
     applications = database.get_applications()
 
     if applications:
-        st.subheader("Update an Application")
-        selected = st.selectbox("Application", applications,
-                                format_func=describe)
-
-        # Start the status dropdown on the application's current status.
-        # The key includes the id so each application gets its own dropdown.
-        new_status = st.selectbox(
-            "New status",
-            database.STATUSES,
-            index=database.STATUSES.index(selected["status"]),
-            key=f"status_{selected['id']}",
+        st.subheader("Edit an Application")
+        # The dropdown holds ids, not whole applications. Editing changes an
+        # application's details but never its id, so Streamlit can still
+        # find the one you picked after a save instead of resetting to the
+        # first. The fixed key stops it treating the dropdown as new.
+        by_id = {application["id"]: application for application in applications}
+        selected_id = st.selectbox(
+            "Application",
+            list(by_id),
+            format_func=lambda app_id: describe(by_id[app_id]),
+            key="selected_app",
         )
-        if st.button("Update status"):
-            database.update_status(selected["id"], new_status)
-            st.success(f"{describe(selected)} is now {new_status}.")
+        selected = by_id[selected_id]
+
+        # Every field starts on the application's current value.
+        # The form key includes the id so each application gets its own form.
+        with st.form(f"edit_{selected['id']}"):
+            company = st.text_input("Company *", selected["company"])
+            role = st.text_input("Role *", selected["role"])
+            status = st.selectbox(
+                "Status",
+                database.STATUSES,
+                index=database.STATUSES.index(selected["status"]),
+            )
+            # The database stores dates as text, but date_input needs a date.
+            date_applied = st.date_input(
+                "Date applied", date.fromisoformat(selected["date_applied"]))
+            # Empty optional fields are None, but text boxes need "".
+            location = st.text_input("Location", selected["location"] or "")
+            job_link = st.text_input("Job link", selected["job_link"] or "")
+            notes = st.text_area("Notes", selected["notes"] or "")
+            saved = st.form_submit_button("Save changes")
+
+        if saved:
+            if not company.strip() or not role.strip():
+                st.error("Company and role are required.")
+            else:
+                database.update_application(
+                    selected["id"],
+                    company.strip(),
+                    role.strip(),
+                    status,
+                    date_applied.isoformat(),
+                    location.strip() or None,
+                    job_link.strip() or None,
+                    notes.strip() or None,
+                )
+                st.success(f"Saved changes to {role.strip()} at "
+                           f"{company.strip()}.")
+
+        st.subheader("Delete an Application")
 
         # Deleting can't be undone, so ask for confirmation first.
         confirm_delete = st.checkbox("Yes, I want to delete this application")

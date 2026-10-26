@@ -97,13 +97,20 @@ def count_by_status():
     return counts
 
 
-def update_status(app_id, new_status):
-    """Change the status of one application, found by its id."""
+def update_application(app_id, company, role, status, date_applied,
+                       location=None, job_link=None, notes=None):
+    """Replace every field of one application, found by its id."""
     conn = get_connection()
     # WHERE id = ? limits the change to one row. Without it, every row changes.
     conn.execute(
-        "UPDATE applications SET status = ? WHERE id = ?",
-        (new_status, app_id),
+        """
+        UPDATE applications
+        SET company = ?, role = ?, status = ?, date_applied = ?,
+            location = ?, job_link = ?, notes = ?
+        WHERE id = ?
+        """,
+        (company, role, status, date_applied, location, job_link, notes,
+         app_id),
     )
     conn.commit()
     conn.close()

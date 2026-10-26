@@ -149,3 +149,29 @@ Split the page into three tabs: Overview (summary + table), Add, and Update / De
 **Empty tabs look broken** - The Update / Delete tab showed nothing when there were no applications. Added an `else` with `st.info("No applications yet. Add one in the Add tab.")`.
 
 **Testing without clicking** - Streamlit's `AppTest` runs the app without a browser and can check it for errors, list the tabs and read the tile values.
+
+## Day 7
+
+Replaced "Update status" with a full edit form, so every field of an application can be changed, not just its status. Renamed the tab to "Edit / Delete".
+
+**SQL I used**
+- `UPDATE applications SET company = ?, role = ?, ... WHERE id = ?` - change several columns in one row at once. Same `WHERE` safety catch as Day 3.
+
+**Removed `update_status`** - The new `update_application` changes status too, so nothing used the old function anymore. Unused code is clutter, and Git still has the old version if I ever need it.
+
+**Pre-filled forms** - Each field starts on the application's current value, like `st.text_input("Company *", selected["company"])`.
+
+**Translating between the database and the form**
+- Dates are stored as text, but `st.date_input` needs a real date. `date.fromisoformat("2026-10-01")` turns text into a date; `.isoformat()` turns it back.
+- Empty fields are `None` in the database, but text boxes need `""`. `selected["location"] or ""` means "the location, or an empty string if there isn't one".
+
+**The jumping dropdown bug** - After saving an edit, the next click made the "Application" dropdown jump back to the first application. Easy to end up editing the wrong one without noticing.
+- Why: the dropdown held whole application dictionaries, and Streamlit remembers my pick by its value. After editing the role, the remembered dictionary (with the old role) didn't match any option anymore, so Streamlit fell back to the first one.
+- First try: giving the dropdown a `key`. Didn't fix it, because the value still didn't match.
+- Real fix: the dropdown holds only ids, which never change, and looks up the full application from the id. Like a coat check: keep the ticket number, get the coat back with `by_id[ticket]`.
+
+**Dictionary comprehension** - `{application["id"]: application for application in applications}` builds a dictionary in one line: "for each application, file it under its id".
+
+**`lambda`** - A tiny unnamed function written in one line. `format_func=lambda app_id: describe(by_id[app_id])` turns an id into a readable label.
+
+**Testing found the bug** - The bug only showed up when testing several steps in a row (save, then click again). Testing one action at a time wouldn't have caught it.
