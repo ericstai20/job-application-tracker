@@ -2,6 +2,7 @@ from datetime import date
 
 import streamlit as st
 
+import ai_helper
 import database
 
 # Make sure the table exists before we try to read from it.
@@ -10,8 +11,8 @@ database.init_db()
 st.title("Job Application Tracker")
 
 # Overview is listed first so it's the tab you see when the app opens.
-overview_tab, add_tab, manage_tab = st.tabs(
-    ["Overview", "Add", "Edit / Delete"])
+overview_tab, add_tab, manage_tab, letter_tab = st.tabs(
+    ["Overview", "Add", "Edit / Delete", "Cover Letter"])
 
 
 def describe(application):
@@ -144,3 +145,56 @@ with overview_tab:
         st.info("No applications yet.")
     else:
         st.info(f"No applications with status {show}.")
+
+# --- Draft a cover letter with Claude ---
+# This block doesn't change any data, so its place in the file
+# doesn't matter.
+with letter_tab:
+    st.subheader("Draft a Cover Letter")
+    applications = database.get_applications()
+    background = ai_helper.load_background()
+
+    if not ai_helper.has_api_key():
+        st.warning("Add your ANTHROPIC_API_KEY to the .env file, "
+                   "then restart the app.")
+    elif background is None:
+        st.warning("Fill in background.md with your experience and an "
+                   "example cover letter first.")
+    elif not applications:
+        st.info("No applications yet. Add one in the Add tab.")
+    else:
+        # Same id trick as the Edit / Delete tab, with its own key.
+        by_id = {application["id"]: application for application in applications}
+        letter_id = st.selectbox(
+            "Application",
+            list(by_id),
+            format_func=lambda app_id: describe(by_id[app_id]),
+            key="letter_app",
+        )
+        application = by_id[letter_id]
+
+        job_posting = st.text_area("Job posting", height=250,
+                                   key=f"posting_{letter_id}")
+
+        if st.button("Draft cover letter"):
+            if not job_posting.strip():
+                st.error("Paste the job posting first.")
+            else:
+                with st.spinner("Claude is writing your letter..."):
+                    try:
+                        # session_state survives reruns, so the draft
+                        # stays on screen after the next click.
+                        st.session_state[f"letter_{letter_id}"] = (
+                            ai_helper.draft_cover_letter(
+                                background,
+                                application["company"],
+                                application["role"],
+                                job_posting.strip(),
+                            ))
+                    except ai_helper.AIError as error:
+                        st.error(str(error))
+
+        letter = st.session_state.get(f"letter_{letter_id}")
+        if letter:
+            st.text_area("Your draft (edit it here, then copy it out)",
+                         letter, height=450)

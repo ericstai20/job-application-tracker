@@ -12,3 +12,6 @@ __pycache__/
 
 # Editor settings (personal to my setup)
 .vscode/
+
+# My resume and example cover letter (personal details)
+background.md

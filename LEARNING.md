@@ -175,3 +175,47 @@ Replaced "Update status" with a full edit form, so every field of an application
 **`lambda`** - A tiny unnamed function written in one line. `format_func=lambda app_id: describe(by_id[app_id])` turns an id into a readable label.
 
 **Testing found the bug** - The bug only showed up when testing several steps in a row (save, then click again). Testing one action at a time wouldn't have caught it.
+
+## Day 8
+
+Added Claude to the app: a "Cover Letter" tab that adapts my example cover letter for each job posting.
+
+**Picking the feature** - Thought about which part of job searching takes the most time. I tailor my cover letter for every application, so that's where Claude helps most.
+
+**What an API is** - A way for one program to talk to another. My app sends a message to Anthropic's servers and gets Claude's reply back. Like a restaurant: my app is the customer, the API is the waiter, Claude is the kitchen.
+
+**Claude Pro vs the API** - Billed separately. Pro is for me chatting with Claude; the API is for programs, pay-as-you-go with credits. Like a gym membership vs the gym's vending machine. Each letter costs a few cents.
+
+**API key** - The password that proves requests come from me. Made in the Anthropic Console, shown only once (if lost, make a new one). Lives in `.env`, which `.gitignore` keeps off GitHub. Never paste it anywhere public.
+
+**`load_dotenv()`** - Copies the key from `.env` into the environment, where the `anthropic` library looks for it. `.env` is only read at startup, so restart the app after changing it.
+
+**Claude can't see my files** - My code reads `background.md` and sends its text in the request. Claude also doesn't remember earlier requests, so every request sends everything it needs, like mailing a packet.
+
+**System prompt vs message**
+- System prompt (`COVER_LETTER_INSTRUCTIONS`) - the standing rules, the same every time.
+- Message - this job's packet: my background, the company, the role, and the posting.
+
+**Prompt design** - The instructions decide the result. "Adapt" means keep my structure and wording and change only what's needed for the new job. "Only use facts from the background, never invent" stops Claude making up experience. Changing these words is how I tune the letters.
+
+**Keeping personal info private** - `background.md` holds my resume and example letter, so it's in `.gitignore` too. Checked with `git check-ignore background.md`.
+
+**Custom errors** - `class AIError(Exception)` is my own error type. `ai_helper.py` turns the library's technical errors into plain-English `AIError`s, so `app.py` only catches one kind of error.
+
+**Most specific error first** - `except` blocks are checked top to bottom, so specific ones (`AuthenticationError`, `RateLimitError`) go before the general `APIStatusError`. Otherwise the general one would catch everything first.
+
+**Separation of concerns (again)** - `ai_helper.py` talks to Claude, `database.py` talks to SQLite, `app.py` only draws the page.
+
+**Streamlit things I used**
+- `st.spinner("...")` - a loading animation while Claude writes.
+- `st.session_state` - Streamlit's memory between reruns. Without it, the draft would vanish on the next click, since every click re-runs `app.py`.
+
+**Testing without spending money**
+- No key / unfilled `background.md` / empty posting - checked each shows the right message.
+- A fake key - a real request that gets rejected, to check the friendly error.
+- A fake Claude - a stand-in function that returns a pretend letter, to check the draft shows and stays.
+- Listing models - a free request that proves the real key works.
+
+**Model choice** - The app uses Claude Opus 5.5. Claude Haiku 5.5 is about 40x cheaper but writes a little less polished. Changing `MODEL` in `ai_helper.py` switches between them.
+
+**Read before sending** - The draft is a starting point. Always check it for anything that isn't true.
