@@ -27,15 +27,56 @@ def describe(application):
 
 # --- Form for adding a new application ---
 with add_tab:
+    # --- Let Claude fill in the form from a job posting ---
+    # This has to sit outside the form: a form only sends its values when
+    # its own submit button is pressed, so it can't hold a second button.
+    st.subheader("Fill In From a Job Posting")
+    fill_link = st.text_input("Job posting link")
+    fill_text = st.text_area(
+        "Or paste the posting text (use this if the link doesn't work)")
+
+    if st.button("Fill in the form"):
+        if not ai_helper.has_api_key():
+            st.error("Add your ANTHROPIC_API_KEY to the .env file, "
+                     "then restart the app.")
+        elif not fill_link.strip() and not fill_text.strip():
+            st.error("Enter a link or paste the posting text first.")
+        else:
+            with st.spinner("Claude is reading the posting..."):
+                try:
+                    details = ai_helper.extract_job_details(
+                        fill_link.strip(), fill_text.strip())
+                except ai_helper.AIError as error:
+                    details = None
+                    st.error(str(error))
+
+            if details and not details["found"]:
+                # When nothing is found, Claude explains why in notes.
+                st.error(f"{details['notes']} If the site blocks Claude, "
+                         "paste the posting text instead.")
+            elif details:
+                # Setting a widget's key in session_state before the widget
+                # is drawn makes it start with that value. This works because
+                # the form below hasn't been drawn yet in this run.
+                st.session_state["add_company"] = details["company"]
+                st.session_state["add_role"] = details["role"]
+                st.session_state["add_location"] = details["location"]
+                st.session_state["add_notes"] = details["notes"]
+                if fill_link.strip():
+                    st.session_state["add_job_link"] = fill_link.strip()
+                st.success("Filled in the form below. "
+                           "Check everything before adding.")
+
+    # The keys let the code above put values into these boxes.
     with st.form("add_application", clear_on_submit=True):
         st.subheader("Add an Application")
-        company = st.text_input("Company *")
-        role = st.text_input("Role *")
+        company = st.text_input("Company *", key="add_company")
+        role = st.text_input("Role *", key="add_role")
         status = st.selectbox("Status", database.STATUSES)
         date_applied = st.date_input("Date applied")
-        location = st.text_input("Location")
-        job_link = st.text_input("Job link")
-        notes = st.text_area("Notes")
+        location = st.text_input("Location", key="add_location")
+        job_link = st.text_input("Job link", key="add_job_link")
+        notes = st.text_area("Notes", key="add_notes")
         submitted = st.form_submit_button("Add application")
 
     if submitted:

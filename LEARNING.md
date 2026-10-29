@@ -219,3 +219,38 @@ Added Claude to the app: a "Cover Letter" tab that adapts my example cover lette
 **Model choice** - The app uses Claude Opus 5.5. Claude Haiku 5.5 is about 40x cheaper but writes a little less polished. Changing `MODEL` in `ai_helper.py` switches between them.
 
 **Read before sending** - The draft is a starting point. Always check it for anything that isn't true.
+
+## Day 9
+
+Added "Fill in from a job posting" to the Add tab: paste a link and Claude fills in the company, role, location and notes.
+
+**Picking an approach** - Three ways to get the posting's text:
+- Claude fetches the link itself (web fetch tool). Least code.
+- My Python code downloads the page (`requests` + `BeautifulSoup`). More code, and many job sites block scripts or build the page with JavaScript, so it often gets back an almost empty page.
+- I paste the text. Always works, but it's a manual step.
+- Picked Claude fetching, with pasting as a backup for sites that block it.
+
+**Tools** - An ability Claude can choose to use during a request. `web_fetch` runs on Anthropic's servers, so my app has no scraping code. `max_uses: 1` stops it fetching more than one page, which keeps the cost down.
+
+**Structured outputs** - A schema (`JOB_DETAILS_SCHEMA`) describes the exact shape the reply must have. Like handing someone a printed form instead of asking for a paragraph. Claude always replies in that shape, as JSON, and `json.loads` turns it into a Python dict.
+
+**JSON** - A text format for data that looks a lot like a Python dict: `{"company": "Acme", "found": true}`.
+
+**The `found` field** - Claude replies in the schema's shape even when the page didn't load, so I added a yes/no field for "did you find a job posting?". When it's false, Claude explains why in `notes`, and the app shows that message.
+
+**`pause_turn`** - Fetching can take Claude several steps, and it can pause partway. The loop sends its progress back so it can carry on, and gives up after 3 rounds so it can't run forever.
+
+**`for ... else`** - The `else` on a `for` loop runs only if the loop finished without hitting `break`. Here, that means Claude never stopped pausing, so it raises an error.
+
+**Refactoring** - Changing how code is organized without changing what it does. Both Claude features needed the same error handling, so I moved it into one shared function, `ask_claude`, instead of copying it.
+
+**`**request`** - Lets a function take any keyword arguments and pass them along. `ask_claude(system=..., messages=...)` collects them into a dict, and `**request` unpacks them into the real API call.
+
+**Filling in a form from code**
+- A form only sends its values when its own submit button is pressed, so the "Fill in the form" button has to sit outside it, above.
+- Each form box got a `key`, like `key="add_company"`. Setting `st.session_state["add_company"]` before the box is drawn makes it start with that value.
+- That only works because the fill section is above the form. Streamlit won't let you change a box after it's already been drawn in the same run.
+
+**Testing with real calls** - Tried pasted text, a careers page that lists many jobs, and a broken link. The careers page was a good catch: Claude saw it listed 679 jobs rather than one and said so, instead of making something up.
+
+**Always check before saving** - Claude fills in the form, but nothing is saved until I review it and click "Add application".
