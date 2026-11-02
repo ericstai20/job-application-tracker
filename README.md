@@ -2,7 +2,7 @@
 
 A web app for keeping track of job applications in one place, built with Python, Streamlit, and SQLite. It uses Claude (Anthropic's AI) to fill in application details from a job posting link and to adapt my cover letter for each job.
 
-> **Status:** Work in progress. The core features work; more are being added step by step.
+> **Status:** Complete. All features work and are covered in this README.
 
 ## Features
 
