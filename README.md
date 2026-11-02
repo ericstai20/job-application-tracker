@@ -15,13 +15,19 @@ The app has four tabs:
 
 Statuses are Applied, Interviewing, Offer, and Rejected.
 
+![Overview tab with status tiles and a table of applications](screenshots/overview.png)
+
 ### How filling in from a link works
 
 Claude opens the link itself (using Anthropic's web fetch tool) and replies with the company, role, location and a short note on pay, requirements and deadline. The details go into the Add form, and nothing is saved until you check them and click "Add application". Some sites, like LinkedIn and Indeed, often block this. When that happens, paste the posting text into the box below the link instead. Use the link to one specific job, not a careers page that lists many.
 
+![Add form filled in by Claude from a job posting link](screenshots/autofill.png)
+
 ### How the cover letter feature works
 
 You write your experience and an example cover letter once, in a file called `background.md`. For each job, Claude keeps your letter's structure and wording and only changes what's needed: the company, the role, and the sentences about why you want the job and which skills you highlight. It's told to use only facts from your background and never invent experience. The draft is a starting point, so always read it before sending.
+
+![Cover letter drafted by Claude for a job posting](screenshots/cover-letter.png)
 
 ## Tech stack
 
@@ -42,6 +48,7 @@ job-application-tracker/
 ├── database.py       # All SQLite database code
 ├── ai_helper.py      # All Anthropic API code, including the instructions Claude follows
 ├── test_database.py  # Automated tests for database.py
+├── screenshots/      # Images used in this README
 ├── requirements.txt  # Python packages the project needs
 ├── LEARNING.md       # Daily notes on what I learned building this
 ├── .gitignore        # Files Git should not track

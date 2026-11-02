@@ -292,3 +292,27 @@ Added automated tests for `database.py` with pytest: 15 tests that run in under 
 - "Every status in STATUSES is accepted" - catches the list in Python and the CHECK rule in the database drifting apart.
 
 **Setup for other people** - Added `pytest` to `requirements.txt`, ignored the `.pytest_cache/` folder in `.gitignore`, and added a "Running the tests" section to the README.
+
+## Day 11
+
+Added screenshots to the README, and chased a bug I couldn't reproduce.
+
+**Why screenshots** - A recruiter spends about 30 seconds on a GitHub page. Pictures show the app working faster than any description.
+
+**Keeping personal info out**
+- Used fake applications (Example 1-3) instead of my real job search.
+- Checked every screenshot before committing. The cover letter shows my university and a project, which is fine since they're on my resume, but no name, email or phone.
+
+**File names for the web** - Renamed `Overview 1.png` to `overview.png`. Spaces in web links turn into `%20`, and some sites care about capital letters, so lowercase-with-dashes is safest.
+
+**Markdown images** - `![description](screenshots/overview.png)`. The description is read aloud by screen readers and shown if the image doesn't load.
+
+**The bug I couldn't reproduce**
+- What happened: after autofill, clicking "Add application" cleared the form and said company and role were required.
+- First test: Streamlit's `AppTest`, which runs the app without a browser. It worked, which told me the bug was about how the browser handles the form, not my Python logic.
+- Next: Playwright, a tool that controls a real browser from code. Tried 9 different ways (Chrome, Edge, slow Claude, my exact data, pausing, editing fields first). All worked.
+- Then it worked for me too. Best guess: the browser tab lost its connection to the app while I took a screenshot, so the form looked filled in on screen, but the app had lost the values.
+- Lesson: don't "fix" a bug you can't see. A guessed fix might hide the real problem. If it happens again, write down the exact steps and check the terminal for errors.
+- Habit for now: after autofill, click "Add application" before switching windows.
+
+**Fake stand-ins for testing** - To test the app without paying for Claude, I swapped in a fake `extract_job_details` that returns made-up details instantly (or after a delay, to act like the real one).
