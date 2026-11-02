@@ -32,6 +32,7 @@ You write your experience and an example cover letter once, in a file called `ba
 | SQLite | Lightweight database stored in a single local file |
 | Anthropic API | Sends requests to Claude for filling in from a link and for cover letters |
 | python-dotenv | Loads secret settings (like API keys) from a `.env` file |
+| pytest | Runs the automated tests |
 
 ## Project structure
 
@@ -40,6 +41,7 @@ job-application-tracker/
 ├── app.py            # Streamlit app (the user interface)
 ├── database.py       # All SQLite database code
 ├── ai_helper.py      # All Anthropic API code, including the instructions Claude follows
+├── test_database.py  # Automated tests for database.py
 ├── requirements.txt  # Python packages the project needs
 ├── LEARNING.md       # Daily notes on what I learned building this
 ├── .gitignore        # Files Git should not track
@@ -101,6 +103,16 @@ Filling in from a link needs only steps 1, 2 and 4. The cover letter feature als
 4. **Restart the app** (`Ctrl + C`, then `streamlit run app.py`). The `.env` file is only read at startup.
 
 Both `.env` and `background.md` are listed in `.gitignore`, so your key and personal details never go to GitHub.
+
+## Running the tests
+
+The tests check every function in `database.py`: adding, reading, filtering, counting, editing and deleting applications. Each test uses its own temporary database, so your real applications are never touched.
+
+```powershell
+pytest
+```
+
+Add `-v` to see each test's name and result.
 
 ## What I'm learning
 

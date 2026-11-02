@@ -254,3 +254,41 @@ Added "Fill in from a job posting" to the Add tab: paste a link and Claude fills
 **Testing with real calls** - Tried pasted text, a careers page that lists many jobs, and a broken link. The careers page was a good catch: Claude saw it listed 679 jobs rather than one and said so, instead of making something up.
 
 **Always check before saving** - Claude fills in the form, but nothing is saved until I review it and click "Add application".
+
+## Day 10
+
+Added automated tests for `database.py` with pytest: 15 tests that run in under a second.
+
+**Why tests** - Before, the only way to know the app worked was clicking around. Tests are small programs that check my code still does what it should, every time I run `pytest`. If I break something by accident, I find out in a second instead of after losing real data.
+
+**Why `database.py` first** - Every function takes simple inputs and returns simple results, and nothing depends on the page or on Claude. That makes it the easiest part to test.
+
+**`assert`** - Means "this must be true". If it isn't, the test fails and pytest shows what the values actually were, like `assert [] == ['Keep me']`.
+
+**Arrange, act, assert** - Each test has three parts, split by blank lines: set up the situation, do one action, check the result.
+
+**Keeping tests away from my real data**
+- `tmp_path` - a brand-new empty folder for each test, deleted afterwards.
+- `monkeypatch` - temporarily changes a variable during one test, then puts it back. I used it to point `database.DB_PATH` at a file in `tmp_path`.
+- This works because `get_connection()` looks up `DB_PATH` every time it's called. Like changing the delivery address: every function now delivers to the throwaway database.
+- Checked it: my real `applications.db` was exactly the same before and after running the tests.
+
+**Fixtures** - Setup code pytest runs before each test. `autouse=True` means every test gets it without asking.
+
+**Helper function** - `add_example()` fills in sensible defaults, so each test only spells out the details it cares about.
+
+**`parametrize`** - Runs one test several times with different inputs. One test checks all four statuses, which is why 12 test functions show up as 15 results.
+
+**`pytest.raises`** - Checks that code fails the way it should. Adding the status "Ghosted" must raise `sqlite3.IntegrityError`, because the database's CHECK rule blocks it. Sometimes failing is the correct behavior.
+
+**Testing the tests** - A test that always passes proves nothing, like a smoke alarm I've never tested. So I broke the code on purpose and checked that a test failed:
+- Removed `WHERE id = ?` from `delete_application`, so it deleted everything. The delete test failed.
+- Changed `if status:` to `if False:`, so the filter never filtered. Both filter tests failed.
+- Then undid each break with `git checkout database.py`.
+
+**Tests that matter for this app**
+- "Update/delete changes only that application" - the worst bug would be editing or deleting the wrong one.
+- "init_db again keeps data" - the app calls it on every rerun, so it must never wipe anything.
+- "Every status in STATUSES is accepted" - catches the list in Python and the CHECK rule in the database drifting apart.
+
+**Setup for other people** - Added `pytest` to `requirements.txt`, ignored the `.pytest_cache/` folder in `.gitignore`, and added a "Running the tests" section to the README.

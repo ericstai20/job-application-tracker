@@ -15,3 +15,6 @@ __pycache__/
 
 # My resume and example cover letter (personal details)
 background.md
+
+# pytest's cache of the last test run
+.pytest_cache/
